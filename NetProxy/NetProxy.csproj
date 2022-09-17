@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>1.0</Version>
+    <AssemblyName>proxy</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Package Info -->
+  <PropertyGroup>
+    <PackageId>NetProxyCLI</PackageId>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <ToolCommandName>proxy</ToolCommandName>
+    <PackageProjectUrl>https://github.com/adam8797/netproxy</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/adam8797/netproxy</RepositoryUrl>
+
+    <Title>NetProxy</Title>
+    <Product>NetProxy</Product>
+    <Authors>Adam Schiavone, Jean-Michael Deruty, Nathan Brown, Jean-Noel Gourdol</Authors>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

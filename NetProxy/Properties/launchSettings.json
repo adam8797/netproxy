@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Netproxy": {
+      "commandName": "Project",
+      "commandLineArgs": "8080~1234 8081~10.1.0.4:8080/any"
+    }
+  }
+}

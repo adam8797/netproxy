@@ -6,29 +6,30 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetProxy
+namespace NetProxy.Proxies
 {
     internal class UdpProxy : IProxy
     {
         /// <summary>
         /// Milliseconds
         /// </summary>
-        public int ConnectionTimeout { get; set; } = (4 * 60 * 1000);
+        public int ConnectionTimeout { get; set; } = 4 * 60 * 1000;
 
-        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null)
+        public async Task Start(Target local, Target remote)
         {
             var connections = new ConcurrentDictionary<IPEndPoint, UdpConnection>();
 
             // TCP will lookup every time while this is only once.
-            var ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);
-            var remoteServerEndPoint = new IPEndPoint(ips[0], remoteServerPort);
+            var ips = await Dns.GetHostAddressesAsync(remote.IP).ConfigureAwait(false);
+            var remoteServerEndPoint = new IPEndPoint(ips[0], remote.Port);
 
-            var localServer = new UdpClient(AddressFamily.InterNetworkV6);
-            localServer.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
-            IPAddress localIpAddress = string.IsNullOrEmpty(localIp) ? IPAddress.IPv6Any : IPAddress.Parse(localIp);
-            localServer.Client.Bind(new IPEndPoint(localIpAddress, localPort));
+            var localServer = new UdpClient(AddressFamily.InterNetwork);
 
-            Console.WriteLine($"UDP proxy started [{localIpAddress}]:{localPort} -> [{remoteServerHostNameOrAddress}]:{remoteServerPort}");
+            IPAddress localIpAddress = IPAddress.Parse(local.IP);
+
+            localServer.Client.Bind(new IPEndPoint(localIpAddress, local.Port));
+
+            Console.WriteLine($"UDP proxy started [{localIpAddress}]:{local.Port} -> [{remote.IP}]:{remote.Port}");
 
             var _ = Task.Run(async () =>
             {
@@ -81,7 +82,7 @@ namespace NetProxy
         private bool _isRunning;
         private long _totalBytesForwarded;
         private long _totalBytesResponded;
-        private readonly TaskCompletionSource<bool> _forwardConnectionBindCompleted = new TaskCompletionSource<bool>();
+        private readonly TaskCompletionSource<bool> _forwardConnectionBindCompleted = new ();
 
         public UdpConnection(UdpClient localServer, IPEndPoint sourceEndpoint, IPEndPoint remoteEndpoint)
         {
@@ -92,8 +93,7 @@ namespace NetProxy
             _remoteEndpoint = remoteEndpoint;
             _sourceEndpoint = sourceEndpoint;
 
-            _forwardClient = new UdpClient(AddressFamily.InterNetworkV6);
-            _forwardClient.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+            _forwardClient = new UdpClient(AddressFamily.InterNetwork);
         }
 
         public async Task SendToServerAsync(byte[] message)

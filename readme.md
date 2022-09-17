@@ -1,50 +1,31 @@
-NetProxy
-========
+# NetProxy
+Netproxy is a simple ipv4 UDP & TCP proxy based on .NET 5.0. The upstream repository uses a configuration file, and my use case was more temporary, therefore a CLI seemed more appropriate.
 
-Netproxy is a simple ipv6/ipv4 UDP & TCP proxy based on .NET 5.0.
-Tested on *win10-x64* and *ubuntu.16.20-x64*.
+## Installing
+```
+dotnet tool install --global NetProxyCLI
+``` 
 
-Why? 
-====
-We needed a simple, crossplatform IPV6 compatible UDP forwarder, and couldn't find a satisfying solution. 
-Nginx was obviously a great candidate but building it on Windows with UDP forwarding enabled was quite a pain.
+## Why? 
+When dealing with corporate firewalls and segregated networks, sometimes you need a quick and dirty reverse proxy in order to test software, or facilitate development. Setting up a full instance
+of nginx isn't necessarily difficult, but way overkill for this situation. 
 
-The objective is to be able to expose as an ipv6 endpoint a server located in an ipv4 only server provider.
+I found the upstream repository, refactored it to my liking, removed IPv6 support (I'm open to bringing it back, its just not in my use case), and published it under a new name
 
-Limitations
-===========
-Each remote client is mapped to a port of the local server therefore:
-- The original IP of the client is hidden to the server the packets are forwarded to.
-- The number of concurrent clients is limited by the number of available ports in the server running the proxy.
 
-Disclaimer
-==========
-Error management exist, but is minimalist. IPV6 is not supported on the forwarding side.
+## Usage
+This version of NetProxy uses a CLI that supports the following formats. That parser is quite naive, so please report any issues
 
-Usage
-=====
-- Compile for your platform following instructions at https://www.microsoft.com/net/core
-- Rewrite the `config.json` file to fit your need
-- Run NetProxy
-
-Configuration
-=============
-`config.json` contains a map of named forwarding rules, for instance :
-
-    {
-     "http": {
-     "localport": 80,
-     "localip":"",
-     "protocol": "tcp",
-     "forwardIp": "xx.xx.xx.xx",
-     "forwardPort": 80
-     },
-    ...
-    }
-
-- *localport* : The local port the forwarder should listen to.
-- *localip* : An optional local binding IP the forwarder should listen to. If empty or missing, it will listen to ANY_ADDRESS.
-- *protocol* : The protocol to forward. `tcp`,`udp`, or `any`.
-- *forwardIp* : The ip the traffic will be forwarded to.
-- *forwardPort* : The port the traffic will be forwarded to.
-
+```
+Proxy Definition Formats:
+  [IP]:[Port]~[IP]:[Port]/[Protocol]
+  [IP]:[Port]~[IP]/[Protocol]
+  [IP]~[IP]:[Port]/[Protocol]
+  [Port]~[IP]:[Port]/[Protocol]
+  [Port]~[IP]/[Protocol]
+  [IP]:[Port]~[IP]:[Port]
+  [IP]:[Port]~[IP]
+  [IP]~[IP]:[Port]
+  [Port]~[IP]:[Port]
+  [Port]~[IP]
+```

@@ -9,25 +9,24 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetProxy
+namespace NetProxy.Proxies
 {
     internal class TcpProxy : IProxy
     {
         /// <summary>
         /// Milliseconds
         /// </summary>
-        public int ConnectionTimeout { get; set; } = (4 * 60 * 1000);
+        public int ConnectionTimeout { get; set; } = 4 * 60 * 1000;
 
-        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp)
+        public async Task Start(Target local, Target remote)
         {
             var connections = new ConcurrentBag<TcpConnection>();
 
-            IPAddress localIpAddress = string.IsNullOrEmpty(localIp) ? IPAddress.IPv6Any : IPAddress.Parse(localIp);
-            var localServer = new TcpListener(new IPEndPoint(localIpAddress, localPort));
-            localServer.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+            IPAddress localIpAddress = IPAddress.Parse(local.IP);
+            var localServer = new TcpListener(new IPEndPoint(localIpAddress, local.Port));
             localServer.Start();
 
-            Console.WriteLine($"TCP proxy started [{localIpAddress}]:{localPort} -> [{remoteServerHostNameOrAddress}]:{remoteServerPort}");
+            Console.WriteLine($"TCP proxy started [{localIpAddress}]:{local.Port} -> [{remote.IP}]:{remote.Port}");
 
             var _ = Task.Run(async () =>
             {
@@ -59,11 +58,9 @@ namespace NetProxy
             {
                 try
                 {
-                    var ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);
+                    var ips = await Dns.GetHostAddressesAsync(remote.IP).ConfigureAwait(false);
 
-                    var tcpConnection = await TcpConnection.AcceptTcpClientAsync(localServer,
-                            new IPEndPoint(ips[0], remoteServerPort))
-                        .ConfigureAwait(false);
+                    var tcpConnection = await TcpConnection.AcceptTcpClientAsync(localServer, new IPEndPoint(ips[0], remote.Port)).ConfigureAwait(false);
                     tcpConnection.Run();
                     connections.Add(tcpConnection);
                 }
@@ -83,7 +80,7 @@ namespace NetProxy
         private readonly EndPoint? _sourceEndpoint;
         private readonly IPEndPoint _remoteEndpoint;
         private readonly TcpClient _forwardClient;
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancellationTokenSource = new ();
         private readonly EndPoint? _serverLocalEndpoint;
         private EndPoint? _forwardLocalEndpoint;
         private long _totalBytesForwarded;
@@ -102,7 +99,7 @@ namespace NetProxy
             _localServerConnection = localServerConnection;
             _remoteEndpoint = remoteEndpoint;
 
-            _forwardClient = new TcpClient {NoDelay = true};
+            _forwardClient = new TcpClient { NoDelay = true };
 
             _sourceEndpoint = _localServerConnection.Client.RemoteEndPoint;
             _serverLocalEndpoint = _localServerConnection.Client.LocalEndPoint;

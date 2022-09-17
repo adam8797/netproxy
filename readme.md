@@ -1,3 +1,4 @@
+[![NuGet Badge](https://buildstats.info/nuget/NetProxyCLI)](https://www.nuget.org/packages/NetProxyCLI/)
 # NetProxy
 Netproxy is a simple ipv4 UDP & TCP proxy based on .NET 5.0. The upstream repository uses a configuration file, and my use case was more temporary, therefore a CLI seemed more appropriate.
 

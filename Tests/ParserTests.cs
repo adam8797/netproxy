@@ -77,6 +77,30 @@ namespace Tests
             Assert.Equal(Protocol.TCP, config.Protocol);
         }
 
+        [Fact]
+        // {Port}~{Port}
+        public void TestLocalProxyParsing()
+        {
+            var config = ProxyParser.ParseProxyConfig("80~81");
+            Assert.Equal("127.0.0.1", config.Local.IP);
+            Assert.Equal(80, config.Local.Port);
+            Assert.Equal("127.0.0.1", config.Remote.IP);
+            Assert.Equal(81, config.Remote.Port);
+            Assert.Equal(Protocol.TCP, config.Protocol);
+        }
+
+        [Fact]
+        // {Port}~{Port}
+        public void TestLocalProxyParsingWithProtocol()
+        {
+            var config = ProxyParser.ParseProxyConfig("80~81/udp");
+            Assert.Equal("127.0.0.1", config.Local.IP);
+            Assert.Equal(80, config.Local.Port);
+            Assert.Equal("127.0.0.1", config.Remote.IP);
+            Assert.Equal(81, config.Remote.Port);
+            Assert.Equal(Protocol.UDP, config.Protocol);
+        }
+
         [Theory]
         [InlineData("1.2.3.4:80~5.6.7.8:80/TCP")]
         [InlineData("1.2.3.4:80~5.6.7.8/TCP")]

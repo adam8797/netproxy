@@ -24,9 +24,11 @@ Proxy Definition Formats:
   [IP]~[IP]:[Port]/[Protocol]
   [Port]~[IP]:[Port]/[Protocol]
   [Port]~[IP]/[Protocol]
+  [Port]~[Port]/[Protocol]
   [IP]:[Port]~[IP]:[Port]
   [IP]:[Port]~[IP]
   [IP]~[IP]:[Port]
   [Port]~[IP]:[Port]
   [Port]~[IP]
+  [Port]~[Port]
 ```
